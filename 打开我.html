@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Hello World</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    body {
+      font-family: "PingFang SC", "Microsoft YaHei", Arial, sans-serif;
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+    .container {
+      text-align: center;
+      background: rgba(255, 255, 255, 0.95);
+      padding: 48px 64px;
+      border-radius: 16px;
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.2);
+    }
+    h1 {
+      font-size: 48px;
+      color: #333;
+      margin-bottom: 24px;
+    }
+    .time-label {
+      font-size: 16px;
+      color: #888;
+      margin-bottom: 8px;
+    }
+    .time-value {
+      font-size: 28px;
+      font-weight: 600;
+      color: #667eea;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Hello World!</h1>
+    <p class="time-label">当前时间：</p>
+    <p id="server-time" class="time-value">加载中...</p>
+  </div>
+
+  <script>
+    // 格式化时间为 YYYY-MM-DD HH:mm:ss
+    function formatTime(date) {
+      const pad = (n) => String(n).padStart(2, '0');
+      return (
+        date.getFullYear() + '-' +
+        pad(date.getMonth() + 1) + '-' +
+        pad(date.getDate()) + ' ' +
+        pad(date.getHours()) + ':' +
+        pad(date.getMinutes()) + ':' +
+        pad(date.getSeconds())
+      );
+    }
+
+    // 显示时间：通过服务器访问时优先取服务器时间，直接双击打开则用本地时间
+    const el = document.getElementById('server-time');
+
+    function updateLocalTime() {
+      el.textContent = formatTime(new Date());
+    }
+
+    async function init() {
+      try {
+        // file:// 协议下此请求会失败，自动回退到本地时间
+        const res = await fetch('/time');
+        const data = await res.json();
+        if (data && data.time) {
+          el.textContent = formatTime(new Date(data.time));
+          return; // 服务器模式下显示一次服务器时间即可
+        }
+      } catch (e) {
+        // 忽略，回退到本地时间
+      }
+      updateLocalTime();
+      setInterval(updateLocalTime, 1000); // 每秒刷新
+    }
+
+    init();
+  </script>
+</body>
+</html>
